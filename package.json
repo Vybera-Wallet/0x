@@ -1,0 +1,64 @@
+{
+  "name": "0x-exchange",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "npm run eslint && npm run solium",
+    "eslint": "eslint test/",
+    "solium": "solium --dir contracts",
+    "coverage": "bash ./scripts/coverage.sh",
+    "build": "bash ./scripts/build.sh",
+    "test": "node src/0x-exchange-contract.js",
+    "deploy": "bash ./scripts/deploy.sh",
+    "flatten": "bash ./scripts/flatten.sh",
+    "verify": "bash ./scripts/verify.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "testConfig": {
+    "deployed_address": "0x2bc7F5F26Eb2E89B3Ba25B91B4D36eAb537a0941"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
+    "@openzeppelin/test-helpers": "^0.5.10",
+    "@truffle/hdwallet-provider": "^1.4.2",
+    "audit": "0.0.6",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@ethersproject/solidity": "^5.0.7",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^3.0.0",
+    "eslint": "^7.12.1",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eth-gas-reporter": "^0.2.20",
+    "ethereumjs-testrpc-sc": "^6.5.1-sc.1",
+    "fs-extra": "^9.0.1",
+    "karma": "^6.3.4",
+    "lodash": "^4.17.21",
+    "prettier": "^2.1.2",
+    "prettier-plugin-solidity": "^1.0.0-alpha.60",
+    "should": "^13.2.3",
+    "solidity-coverage": "^0.7.11",
+    "solium": "^1.2.5",
+    "truffle": "^5.1.51",
+    "truffle-flattener": "^1.5.0",
+    "truffle-plugin-verify": "^0.5.11",
+    "web3-utils": "^1.5.1"
+  }
+}
