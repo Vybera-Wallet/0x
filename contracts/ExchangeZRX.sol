@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ExchangeZRX is Ownable {
 
-    // exchange fee in percents
+    // exchange fee in percents with base 100 (percent * 100)
+    // e.g. 0.1% = 10, 1% = 100
+    uint private constant percent100Base = 10000;
     uint public exchangeFee;
 
     event BoughtTokens(IERC20 sellToken, IERC20 buyToken, uint256 boughtAmount, address buyer);
@@ -16,6 +18,7 @@ contract ExchangeZRX is Ownable {
     }
 
     function setFee(uint fee) external onlyOwner {
+        require(fee <= percent100Base, "!fee > 100");
         exchangeFee = fee;
     }
 
@@ -41,23 +44,21 @@ contract ExchangeZRX is Ownable {
         uint256 boughtAmount = buyToken.balanceOf(address(this));
         uint256 balanceBefore = address(this).balance;
 
-        require(sellToken.allowance(msg.sender, address(this)) >= sellAmount, "sell amount is not approved to transfer");
         // deposit sell token amount to current contract
-        require(sellToken.transferFrom(msg.sender,  address(this), sellAmount), "failed to transfer sell token");
+        require(sellToken.transferFrom(msg.sender,  address(this), sellAmount), "!failed to transfer sell token");
 
         // Give `spender` an allowance to spend this contract's `sellToken`.
-        require(sellToken.approve(spender, 0));
-        require(sellToken.approve(spender, sellAmount), "failed to approve sell token for 0x");
-
-        // Call the encoded swap function call on the contract at `swapTarget`,
-        // passing along any ETH attached to this function call to cover protocol fees.
+        if (sellToken.allowance(address(this), spender) == 0) {
+            require(sellToken.approve(spender, uint(-1)), "!failed to approve sell token");
+        }
+        // Call the encoded swap function call
         (bool success,) = swapTarget.call{value: msg.value}(swapCallData);
-        require(success, 'SWAP_CALL_FAILED');
+        require(success, '!swap failed');
         // Refund any unspent protocol fees to the sender.
         msg.sender.transfer(address(this).balance - balanceBefore);
         // Use our current buyToken balance to determine how much we've bought.
         boughtAmount = buyToken.balanceOf(address(this)) - boughtAmount;
-        boughtAmount = (boughtAmount * (100 - exchangeFee)) / 100;
+        boughtAmount = (boughtAmount * (percent100Base - exchangeFee)) / percent100Base;
         // transfer bought token
         require(buyToken.transfer(msg.sender, boughtAmount));
 

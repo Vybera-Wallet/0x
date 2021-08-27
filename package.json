@@ -20,9 +20,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "testConfig": {
-    "deployed_address": "0x2bc7F5F26Eb2E89B3Ba25B91B4D36eAb537a0941"
-  },
   "dependencies": {
     "@openzeppelin/contracts": "^3.2.0",
     "@openzeppelin/test-helpers": "^0.5.10",

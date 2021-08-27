@@ -43,9 +43,24 @@ function weiToEther(weiAmount) {
         .toString(10);
 }
 
+function amountToBase(amount, decimals) {
+    return new BigNumber(amount)
+        .times(`1e${decimals}`)
+        .integerValue()
+        .toString(10);
+}
+
+function baseToAmount(base, decimals) {
+    return new BigNumber(base)
+        .div(`1e${decimals}`)
+        .toString(10);
+}
+
 module.exports = {
     etherToWei,
     weiToEther,
+    amountToBase,
+    baseToAmount,
     createWeb3,
     createQueryString,
     waitForTxSuccess,

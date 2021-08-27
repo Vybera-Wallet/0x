@@ -9,11 +9,11 @@ const ether = (n) => web3.utils.toWei(n, 'ether');
 module.exports = function (deployer, network) {
   deployer.then(async () => {
     if (network === 'test' || network === 'soliditycoverage' || network === 'develop') {
-      const exFee = 1;
+      const exFee = 100;
       await deployer.deploy(ExchangeZRX, exFee);
       const exchangeZRX = await ExchangeZRX.deployed();
     } else if (network === 'ropsten') {
-      const exFee = 1;
+      const exFee = 100;
       await deployer.deploy(ExchangeZRX, exFee);
       const exchangeZRX = await ExchangeZRX.deployed();
       // Update the deployed address in package.json.
