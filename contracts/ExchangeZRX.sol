@@ -12,6 +12,7 @@ contract ExchangeZRX is Ownable {
     uint public exchangeFee;
 
     event BoughtTokens(IERC20 sellToken, IERC20 buyToken, uint256 boughtAmount, address buyer);
+    event WithdrawFee(IERC20 token, address recipient, uint256 amount);
 
     constructor(uint fee) public {
         exchangeFee = fee;
@@ -20,6 +21,15 @@ contract ExchangeZRX is Ownable {
     function setFee(uint fee) external onlyOwner {
         require(fee <= percent100Base, "!fee > 100");
         exchangeFee = fee;
+    }
+
+    function withdrawFee(IERC20 token, address recipient) external onlyOwner {
+        // get token balance of contract
+        uint256 amount = token.balanceOf(address(this));
+        // transef all amount to recipient
+        token.transfer(recipient, amount);
+
+        emit WithdrawFee(token, recipient, amount);
     }
 
     // Swaps ERC20->ERC20 tokens held by this contract using a 0x-API quote.
