@@ -3,7 +3,6 @@ pragma solidity >= 0.6.0 < 0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
 contract ExchangeZRX is Ownable {
 
     // exchange fee in percents with base 100 (percent * 100)
@@ -31,6 +30,9 @@ contract ExchangeZRX is Ownable {
 
         emit WithdrawFee(token, recipient, amount);
     }
+
+    // Payable fallback to allow this contract to receive protocol fee refunds.
+    receive() external payable {}
 
     // Swaps ERC20->ERC20 tokens held by this contract using a 0x-API quote.
     function fillQuote(
