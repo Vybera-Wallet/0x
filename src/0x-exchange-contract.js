@@ -120,7 +120,7 @@ async function doWithdrawFee(web3, tokenName, recipientAddress) {
     const token = new web3.eth.Contract(ABIERC20, tokenAddresses[tokenName]);
     const tokenDecimals = await token.methods.decimals().call();
     try {
-        let receipt = await waitForTxSuccess(contract.methods.withdrawTokenFee(
+        let receipt = await waitForTxSuccess(contract.methods.withdrawFee(
             tokenAddresses[tokenName],
             recipientAddress
         ).send({
