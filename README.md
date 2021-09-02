@@ -42,7 +42,7 @@
   DEPLOYER_ACCOUNT=<your_ethereum_account>
  ```
 
-- `npm run deploy` - deploy and configure all contracts in rinkeby testnet
+- `npm run deploy` - deploy and configure all contracts in ropsten testnet
 - `npm run deploy <network>` - deploy and configure all contracts for some network [NOT IMPLEMENTED]
 
 ### Verify deployed contracts
