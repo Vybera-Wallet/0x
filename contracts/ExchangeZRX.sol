@@ -22,13 +22,21 @@ contract ExchangeZRX is Ownable {
         exchangeFee = fee;
     }
 
-    function withdrawFee(IERC20 token, address recipient) external onlyOwner {
+    function withdrawTokenFee(IERC20 token, address recipient) external onlyOwner {
         // get token balance of contract
         uint256 amount = token.balanceOf(address(this));
         // transef all amount to recipient
         token.transfer(recipient, amount);
 
         emit WithdrawFee(token, recipient, amount);
+    }
+
+    // Transfer ETH held by this contrat to the sender/owner.
+    function withdrawETH(uint256 amount)
+        external
+        onlyOwner
+    {
+        msg.sender.transfer(amount);
     }
 
     // Payable fallback to allow this contract to receive protocol fee refunds.
