@@ -6,16 +6,20 @@ const { BigNumber, createWeb3, createQueryString, waitForTxSuccess, amountToBase
 const { sellAmount, deployedAddress } = require('./test_config.json');
 
 
-// const API_QUOTE_URL = 'https://api.0x.org/swap/v1/quote';
-const ROPSTEN_API_QUOTE_URL = 'https://ropsten.api.0x.org/swap/v1/quote';
+const NETWORKS_0X_API_URL = {
+    'mainnet': 'https://api.0x.org/',
+    'ropsten': 'https://ropsten.api.0x.org/',
+    'bsc': 'https://bsc.api.0x.org/',
+    'polygon': 'https://polygon.api.0x.org/',
+}
 const { abi: ABIEX } = require('../build/contracts/ExchangeZRX.json');
 const { abi: ABIERC20 } = require('../build/contracts/ERC20.json');
 
 // addresses for withdraw fee
 let tokenAddresses = {}
 
-async function callZRXAPI(qs) {
-    const quoteUrl = `${ROPSTEN_API_QUOTE_URL}?${qs}`;
+async function callZRXSwapAPI(qs, network) {
+    const quoteUrl = `${NETWORKS_0X_API_URL[network]}swap/v1/quote?${qs}`;
     // console.info(`Fetching quote ${quoteUrl.bold}...`);
     const response = await fetch(quoteUrl);
     const quote = await response.json();
@@ -27,15 +31,15 @@ async function callZRXAPI(qs) {
     return quote;
 }
 
-async function doSwap(web3, sellAmount, sellTokenName, buyTokenName) {
+async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
     const contract = new web3.eth.Contract(ABIEX, deployedAddress);
     const [owner] = await web3.eth.getAccounts();
     // fake call api to get sell and buy tokens addresses
-    let quote = await callZRXAPI(createQueryString({
+    let quote = await callZRXSwapAPI(createQueryString({
         sellToken: sellTokenName,
         buyToken: buyTokenName,
         sellAmount: etherToWei(1)
-    }));
+    }), network);
 
     tokenAddresses[sellTokenName] = quote.sellTokenAddress;
     tokenAddresses[buyTokenName] = quote.buyTokenAddress;
@@ -57,11 +61,11 @@ async function doSwap(web3, sellAmount, sellTokenName, buyTokenName) {
     // Get a quote from 0x-API to sell
     console.info(`Fetching swap quote from 0x-API to sell ${baseToAmount(sellAmountBase, sellTokenDecimals)} ${sellTokenName} for ${buyTokenName} ...`);
 
-    quote = await callZRXAPI(createQueryString({
+    quote = await callZRXSwapAPI(createQueryString({
         sellToken: sellTokenName,
         buyToken: buyTokenName,
         sellAmount: sellAmountBase,
-    }));
+    }), network);
 
     var str = JSON.stringify(quote, null, 2);
     // console.log(str)
@@ -139,13 +143,13 @@ async function doWithdrawFee(web3, tokenName, recipientAddress) {
     }
 }
 
-async function runTest() {
-    const web3 = createWeb3("ropsten");
+async function runTest(network) {
+    const web3 = createWeb3(network);
 
-    await doSwap(web3, '0.1', 'WETH', 'USDC');
-    await doSwap(web3, '0.1', 'WETH', 'DAI');
-    await doSwap(web3, 'all', 'USDC', 'WETH');
-    await doSwap(web3, 'all', 'DAI', 'WETH');
+    await doSwap(web3, network, '0.1', 'WETH', 'USDC');
+    await doSwap(web3, network, '0.1', 'WETH', 'DAI');
+    await doSwap(web3, network, 'all', 'USDC', 'WETH');
+    await doSwap(web3, network, 'all', 'DAI', 'WETH');
     await doWithdrawFee(web3, 'DAI', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
     await doWithdrawFee(web3, 'USDC', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
     await doWithdrawFee(web3, 'WETH', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
@@ -153,5 +157,5 @@ async function runTest() {
 }
 
 
-runTest().then(() => { process.exit(0); });
+runTest('ropsten').then(() => { process.exit(0); });
 

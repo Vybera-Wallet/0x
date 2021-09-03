@@ -31,12 +31,12 @@ contract ExchangeZRX is Ownable {
         emit WithdrawFee(token, recipient, amount);
     }
 
-    // Transfer ETH held by this contrat to the sender/owner.
-    function withdrawETH(uint256 amount)
+    // Transfer ETH held by this contrat to recipient
+    function withdrawETH(uint256 amount, address payable recipient)
         external
         onlyOwner
     {
-        msg.sender.transfer(amount);
+        recipient.transfer(amount);
     }
 
     // Payable fallback to allow this contract to receive protocol fee refunds.
