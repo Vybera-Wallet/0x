@@ -1,0 +1,9 @@
+{
+    "tokenFee": 100,
+    "swapTargets": {
+        "mainnet": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "ropsten": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "bsc": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "polygon": "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
+    }
+}

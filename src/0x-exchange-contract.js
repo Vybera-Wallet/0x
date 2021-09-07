@@ -11,6 +11,7 @@ const NETWORKS_0X_API_URL = {
     'bsc': 'https://bsc.api.0x.org/',
     'polygon': 'https://polygon.api.0x.org/',
 }
+
 const { abi: ABIEX } = require('../build/contracts/ExchangeZRX.json');
 const { abi: ABIERC20 } = require('../build/contracts/ERC20.json');
 
@@ -33,7 +34,7 @@ async function callZRXSwapAPI(qs, network) {
 async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
     const contract = new web3.eth.Contract(ABIEX, deployedAddress);
     const [owner] = await web3.eth.getAccounts();
-    // fake call api to get sell and buy tokens addresses
+    // fake api call to get sell and buy tokens addresses
     let quote = await callZRXSwapAPI(createQueryString({
         sellToken: sellTokenName,
         buyToken: buyTokenName,

@@ -30,7 +30,7 @@ contract ExchangeZRX is Ownable {
         emit ChangeFee(fee);
     }
 
-    function getFee() public view returns (uint32 fee) {
+    function getFee() external view returns (uint32 fee) {
         fee = percent100Base - _exchangeFeeFactor;
     }
 
@@ -39,7 +39,7 @@ contract ExchangeZRX is Ownable {
         emit ChangeSwapTarget(swapTarget);
     }
 
-    function getSwapTarget() public view returns(address) {
+    function getSwapTarget() external view returns(address) {
         return _swapTarget;
     }
 
