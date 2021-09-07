@@ -5,7 +5,6 @@ const process = require('process');
 const { BigNumber, createWeb3, createQueryString, waitForTxSuccess, amountToBase, baseToAmount, etherToWei } = require('./utils');
 const { sellAmount, deployedAddress } = require('./test_config.json');
 
-
 const NETWORKS_0X_API_URL = {
     'mainnet': 'https://api.0x.org/',
     'ropsten': 'https://ropsten.api.0x.org/',
@@ -71,6 +70,13 @@ async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
     // console.log(str)
     console.info(`Received a quote with price ${quote.price}`);
 
+    const swapTarget = await contract.methods.getSwapTarget().call();
+
+    if (swapTarget.toString().toLowerCase() != quote.to.toString().toLowerCase()) {
+        console.log(`Swap targets is not equal. In contract: ${swapTarget}, in API: ${quote.to}`);
+        process.exit(1);
+    }
+
     // check sellTokenBalance
     const result = await sellToken.methods.balanceOf(owner).call();
     if (result < sellAmountBase) {
@@ -98,7 +104,6 @@ async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
                 quote.sellTokenAddress,
                 quote.buyTokenAddress,
                 quote.allowanceTarget,
-                quote.to,
                 quote.data
         ).send({
             from: owner,
@@ -155,7 +160,6 @@ async function runTest(network) {
     await doWithdrawFee(web3, 'WETH', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
     process.exit(0);
 }
-
 
 runTest('ropsten').then(() => { process.exit(0); });
 

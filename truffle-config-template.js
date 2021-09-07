@@ -58,6 +58,38 @@ const mainnetNetworkConfig = {
   gasPrice: 125000000000,
 };
 
+const polygonNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_ID}`),
+  network_id: 137, // Polygon mainnet's id
+  networkCheckTimeout: 10000000,
+  gasLimit: 5000000,
+  from: process.env.DEPLOYER_ACCOUNT, // contracts owner address
+  websockets: true,
+  confirmations: 2,
+  gasPrice: 125000000000,
+};
+
+const bscNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://bsc-dataseed1.binance.org`),
+  network_id: 56, // BSC mainnet's id
+  confirmations: 10,
+  timeoutBlocks: 200,
+  skipDryRun: true
+};
+
+// Not supported in 0x API
+/*
+const bscTestnetNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+  network_id: 97,
+  confirmations: 2,
+  timeoutBlocks: 200,
+  skipDryRun: true
+};
+*/
+
+
+
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -103,6 +135,9 @@ module.exports = {
     ropsten: ropstenNetworkConfig,
     rinkeby: rinkebyNetworkConfig,
     mainnet: mainnetNetworkConfig,
+    polygon: polygonNetworkConfig,
+    bsc: bscNetworkConfig,
+
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
