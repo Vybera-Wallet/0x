@@ -54,18 +54,7 @@ const mainnetNetworkConfig = {
   gasLimit: 5000000,
   from: process.env.DEPLOYER_ACCOUNT, // contracts owner address
   websockets: true,
-  confirmations: 2,
-  gasPrice: 125000000000,
-};
-
-const polygonNetworkConfig = {
-  provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_ID}`),
-  network_id: 137, // Polygon mainnet's id
-  networkCheckTimeout: 10000000,
-  gasLimit: 5000000,
-  from: process.env.DEPLOYER_ACCOUNT, // contracts owner address
-  websockets: true,
-  confirmations: 2,
+  confirmations: 10,
   gasPrice: 125000000000,
 };
 
@@ -75,6 +64,36 @@ const bscNetworkConfig = {
   confirmations: 10,
   timeoutBlocks: 200,
   skipDryRun: true
+};
+
+const bscTestnetNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+  network_id: 97, // BSC testnet's id
+  confirmations: 2,
+  timeoutBlocks: 200,
+  skipDryRun: true
+};
+
+const polygonNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_ID}`),
+  network_id: 137, // Polygon mainnet's id
+  networkCheckTimeout: 10000000,
+  gasLimit: 5000000,
+  from: process.env.DEPLOYER_ACCOUNT, // contracts owner address
+  websockets: true,
+  confirmations: 10,
+  gasPrice: 125000000000,
+};
+
+const polygonMumbaiNetworkConfig = {
+  provider: () => new HDWalletProvider(mnemonic, `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_ID}`),
+  network_id: 80001, // Polygon testnet's id
+  networkCheckTimeout: 10000000,
+  gasLimit: 5000000,
+  from: process.env.DEPLOYER_ACCOUNT, // contracts owner address
+  websockets: true,
+  confirmations: 10,
+  gasPrice: 125000000000,
 };
 
 // Not supported in 0x API
@@ -136,7 +155,9 @@ module.exports = {
     rinkeby: rinkebyNetworkConfig,
     mainnet: mainnetNetworkConfig,
     polygon: polygonNetworkConfig,
+    polygonMumbai: polygonMumbaiNetworkConfig,
     bsc: bscNetworkConfig,
+    bscTestnet: bscTestnetNetworkConfig,
 
     // Useful for private networks
     // private: {

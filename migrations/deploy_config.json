@@ -1,9 +1,26 @@
 {
-    "tokenFee": 100,
-    "swapTargets": {
-        "mainnet": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "ropsten": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "bsc": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "polygon": "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
+    "mainnet": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
+    },
+    "ropsten": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
+    },
+    "bsc": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
+    },
+    "bscTestnet": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
+    },
+    "polygon": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
+    },
+    "polygonMumbai": {
+        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "tokenFee": 100
     }
 }

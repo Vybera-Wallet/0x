@@ -3,20 +3,20 @@ require('colors');
 const fetch = require('node-fetch');
 const process = require('process');
 const { BigNumber, createWeb3, createQueryString, waitForTxSuccess, amountToBase, baseToAmount, etherToWei } = require('./utils');
-const { sellAmount, deployedAddress } = require('./test_config.json');
+const TEST_CONFIG = require('./test_config.json');
 
 const NETWORKS_0X_API_URL = {
     'mainnet': 'https://api.0x.org/',
     'ropsten': 'https://ropsten.api.0x.org/',
     'bsc': 'https://bsc.api.0x.org/',
-    'polygon': 'https://polygon.api.0x.org/',
+    'polygon': 'https://polygon.api.0x.org/'
 }
 
 const { abi: ABIEX } = require('../build/contracts/ExchangeZRX.json');
 const { abi: ABIERC20 } = require('../build/contracts/ERC20.json');
 
 // addresses for withdraw fee
-let tokenAddresses = {}
+let tokenAddresses = {};
 
 async function callZRXSwapAPI(qs, network) {
     const quoteUrl = `${NETWORKS_0X_API_URL[network]}swap/v1/quote?${qs}`;
@@ -32,6 +32,7 @@ async function callZRXSwapAPI(qs, network) {
 }
 
 async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
+    const deployedAddress = TEST_CONFIG[network].deployedAddress;
     const contract = new web3.eth.Contract(ABIEX, deployedAddress);
     const [owner] = await web3.eth.getAccounts();
     // fake api call to get sell and buy tokens addresses
@@ -60,6 +61,8 @@ async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
 
     // Get a quote from 0x-API to sell
     console.info(`Fetching swap quote from 0x-API to sell ${baseToAmount(sellAmountBase, sellTokenDecimals)} ${sellTokenName} for ${buyTokenName} ...`);
+
+    console.log(`${sellTokenName}: ${quote.sellTokenAddress}, ${buyTokenName}: ${quote.buyTokenAddress}`);
 
     quote = await callZRXSwapAPI(createQueryString({
         sellToken: sellTokenName,
@@ -124,6 +127,7 @@ async function doSwap(web3, network, sellAmount, sellTokenName, buyTokenName) {
 }
 
 async function doWithdrawFee(web3, tokenName, recipientAddress) {
+    const deployedAddress = TEST_CONFIG[network].deployedAddress;
     const contract = new web3.eth.Contract(ABIEX, deployedAddress);
     const [owner] = await web3.eth.getAccounts();
 
@@ -152,15 +156,28 @@ async function doWithdrawFee(web3, tokenName, recipientAddress) {
 async function runTest(network) {
     const web3 = createWeb3(network);
 
-    await doSwap(web3, network, '0.1', 'WETH', 'USDC');
-    await doSwap(web3, network, '0.1', 'WETH', 'DAI');
-    await doSwap(web3, network, 'all', 'USDC', 'WETH');
-    await doSwap(web3, network, 'all', 'DAI', 'WETH');
-    await doWithdrawFee(web3, 'DAI', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
-    await doWithdrawFee(web3, 'USDC', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
-    await doWithdrawFee(web3, 'WETH', '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
+    const sellAmount = TEST_CONFIG[network].sellAmount;
+    const wToken = TEST_CONFIG[network].wrappedToken;
+    const token1 = TEST_CONFIG[network].token1;
+    const token2 = TEST_CONFIG[network].token2;
+
+    await doSwap(web3, network, sellAmount, wToken, token1);
+    await doSwap(web3, network, sellAmount, wToken, token2);
+    await doSwap(web3, network, 'all', token1, wToken);
+    await doSwap(web3, network, 'all', token2, wToken);
+    await doWithdrawFee(web3, token2, '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
+    await doWithdrawFee(web3, token1, '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
+    await doWithdrawFee(web3, wToken, '0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7');
     process.exit(0);
 }
 
-runTest('ropsten').then(() => { process.exit(0); });
+let network = process.argv.slice(2)[0];
+
+if (Object.keys(NETWORKS_0X_API_URL).indexOf(network) === -1) {
+    console.log(`Unsupported network: ${network}`);
+    console.log(`Available networks: ${Object.keys(NETWORKS_0X_API_URL)}`);
+    process.exit(1);
+}
+
+runTest(network).then(() => { process.exit(0); });
 
