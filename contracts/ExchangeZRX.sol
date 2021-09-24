@@ -3,6 +3,10 @@ pragma solidity >= 0.6.0 < 0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface IWETH is IERC20 {
+    function deposit() external payable;
+}
+
 contract ExchangeZRX is Ownable {
 
     // exchange fee in percents with base 100 (percent * 100)
@@ -14,14 +18,17 @@ contract ExchangeZRX is Ownable {
     // 0x protocol swap target contract
     address payable private _swapTarget;
 
+    IWETH private WETH;
+
     event BoughtTokens(IERC20 sellToken, IERC20 buyToken, uint256 boughtAmount, address indexed buyer);
     event WithdrawFee(IERC20 token, address indexed recipient, uint256 amount);
     event ChangeFee(uint32 fee);
     event ChangeSwapTarget(address indexed swapTarget);
 
-    constructor(uint32 fee, address payable swapTarget) public {
+    constructor(uint32 fee, address payable swapTarget, IWETH weth) public {
         _exchangeFeeFactor = percent100Base - fee;
         _swapTarget = swapTarget;
+        WETH = weth;
     }
 
     function setFee(uint32 fee) external onlyOwner {
@@ -63,6 +70,40 @@ contract ExchangeZRX is Ownable {
     // Payable fallback to allow this contract to receive protocol fee refunds.
     receive() external payable {}
 
+    function _fillQuote(
+        // The `sellTokenAddress` field from the API response.
+        IERC20 sellToken,
+        // The `buyTokenAddress` field from the API response.
+        IERC20 buyToken,
+        // The `allowanceTarget` field from the API response.
+        address spender,
+        // The `data` field from the API response.
+        bytes memory swapCallData,
+        // dex commition
+        uint256 fee
+    )
+        internal
+    {
+        // Track our balance of the buyToken to determine how much we've bought.
+        uint256 boughtAmount = buyToken.balanceOf(address(this));
+
+        // Give `spender` an allowance to spend this contract's `sellToken`.
+        if (sellToken.allowance(address(this), spender) == 0) {
+            require(sellToken.approve(spender, uint(-1)), "!failed to approve sell token");
+        }
+        // Call the encoded swap function call
+        (bool success,) = _swapTarget.call{value: fee}(swapCallData);
+        require(success, '!swap failed');
+
+        // Use our current buyToken balance to determine how much we've bought.
+        boughtAmount = buyToken.balanceOf(address(this)) - boughtAmount;
+        boughtAmount = (boughtAmount * _exchangeFeeFactor) / percent100Base;
+        // transfer bought token
+        buyToken.transfer(msg.sender, boughtAmount);
+
+        emit BoughtTokens(sellToken, buyToken, boughtAmount, msg.sender);
+    }
+
     // Swaps ERC20->ERC20 tokens held by this contract using a 0x-API quote.
     function fillQuote(
         // The `sellAmount` field from the API response.
@@ -79,25 +120,31 @@ contract ExchangeZRX is Ownable {
         external
         payable
     {
-        // Track our balance of the buyToken to determine how much we've bought.
-        uint256 boughtAmount = buyToken.balanceOf(address(this));
-
+        // Track our balance of the sellToken
+        uint256 sellTokenBefore = sellToken.balanceOf(address(this));
         // deposit sell token amount to current contract
         require(sellToken.transferFrom(msg.sender,  address(this), sellAmount), "!failed to transfer sell token");
+        _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value);
+        // check the sell token our balance to prevent to sell more, than user has
+        require(sellTokenBefore <= sellToken.balanceOf(address(this)), "!invalid sell amount");
+    }
 
-        // Give `spender` an allowance to spend this contract's `sellToken`.
-        if (sellToken.allowance(address(this), spender) == 0) {
-            require(sellToken.approve(spender, uint(-1)), "!failed to approve sell token");
-        }
-        // Call the encoded swap function call
-        (bool success,) = _swapTarget.call{value: msg.value}(swapCallData);
-        require(success, '!swap failed');
-        // Use our current buyToken balance to determine how much we've bought.
-        boughtAmount = buyToken.balanceOf(address(this)) - boughtAmount;
-        boughtAmount = (boughtAmount * _exchangeFeeFactor) / percent100Base;
-        // transfer bought token
-        buyToken.transfer(msg.sender, boughtAmount);
-
-        emit BoughtTokens(sellToken, buyToken, boughtAmount, msg.sender);
+    // swaps ETH->ERC20 tokens held by this contract using a 0x-API quote.
+    function fillQuoteETH(
+        uint256 sellAmount,
+        IERC20 buyToken,
+        address spender,
+        bytes calldata swapCallData
+    )
+        external
+        payable
+    {
+        require(msg.value >= sellAmount, "!invalid sell amount");
+        uint256 balanceBefore = WETH.balanceOf((address(this)));
+        // deposit ETH to WETH
+        WETH.deposit{value: sellAmount}();
+        _fillQuote(IERC20(WETH), buyToken, spender, swapCallData, msg.value - sellAmount);
+        // check the sell token our balance to prevent to sell more, than user has
+        require(balanceBefore <= WETH.balanceOf(address(this)), "!invalid sell amount");
     }
 }

@@ -65,4 +65,5 @@ module.exports = {
     createQueryString,
     waitForTxSuccess,
     createProvider,
+    BigNumber
 };

@@ -1,26 +1,22 @@
 {
     "mainnet": {
         "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
+        "wrappedToken": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "exchangeFee": 100
     },
     "ropsten": {
         "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
+        "wrappedToken": "0xc778417e063141139fce010982780140aa0cd5ab",
+        "exchangeFee": 100
     },
     "bsc": {
         "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
-    },
-    "bscTestnet": {
-        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
+        "wrappedToken": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+        "exchangeFee": 100
     },
     "polygon": {
         "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
-    },
-    "polygonMumbai": {
-        "swapTarget": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
-        "tokenFee": 100
+        "wrappedToken": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
+        "exchangeFee": 100
     }
 }

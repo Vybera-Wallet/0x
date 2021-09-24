@@ -11,13 +11,13 @@ const ether = (n) => web3.utils.toWei(n, 'ether');
 module.exports = function (deployer, network) {
   deployer.then(async () => {
     if (network === 'test' || network === 'develop') {
-      console.log(`deploy ExchangeZRX in develop with fee:${DEPLOY_CONFIG[network].tokenFee / 100}%`);
-      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].tokenFee, "0xdef1c0ded9bec7f1a1670819833240f027b25eff");
+      console.log(`deploy ExchangeZRX in develop with fee:${DEPLOY_CONFIG[network].exchangeFee / 100}%`);
+      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].exchangeFee, "0xdef1c0ded9bec7f1a1670819833240f027b25eff", "0x0000000000000000000000000000000000000000");
       const exchangeZRX = await ExchangeZRX.deployed();
     }
     else if (network === 'ropsten' || network === 'bscTestnet' || network === 'polygonMumbai') {
-      console.log(`Deploy ExchangeZRX in ${network} with fee:${DEPLOY_CONFIG[network].tokenFee / 100}%`);
-      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].tokenFee, DEPLOY_CONFIG[network].swapTarget);
+      console.log(`Deploy ExchangeZRX in ${network} with fee:${DEPLOY_CONFIG[network].exchangeFee / 100}%`);
+      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].exchangeFee, DEPLOY_CONFIG[network].swapTarget, DEPLOY_CONFIG[network].wrappedToken);
       const exchangeZRX = await ExchangeZRX.deployed();
       // Update the deployed address in test config.
       TEST_CONFIG[network].deployedAddress = exchangeZRX.address;
@@ -27,8 +27,8 @@ module.exports = function (deployer, network) {
       );
     }
     else if (network === 'mainnet' || network === 'bsc' || network === 'polygon') {
-      console.log(`Deploy ExchangeZRX in ${network} with fee:${DEPLOY_CONFIG[network].tokenFee / 100}%`);
-      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].tokenFee, DEPLOY_CONFIG[network].swapTarget);
+      console.log(`Deploy ExchangeZRX in ${network} with fee:${DEPLOY_CONFIG[network].exchangeFee / 100}%`);
+      await deployer.deploy(ExchangeZRX, DEPLOY_CONFIG[network].exchangeFee, DEPLOY_CONFIG[network].swapTarget, DEPLOY_CONFIG[network].wrappedToken);
     }
     else {
       console.log('unsupported network', network);

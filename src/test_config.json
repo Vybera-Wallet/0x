@@ -2,43 +2,37 @@
     "mainnet": {
         "deployedAddress": "",
         "sellAmount": 0.1,
+        "nativeToken": "ETH",
         "wrappedToken": "WETH",
         "token1": "USDC",
-        "token2": "DAI"
+        "token2": "DAI",
+        "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     },
     "ropsten": {
-        "deployedAddress": "0x721A0f11658c87a6170C241931b46BcF82d4d9d1",
+        "deployedAddress": "0x13D059756f4fe6ABb86dc0a590E7Fffb08379e7F",
         "sellAmount": 0.1,
+        "nativeToken": "ETH",
         "wrappedToken": "WETH",
         "token1": "USDC",
-        "token2": "DAI"
+        "token2": "DAI",
+        "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     },
     "bsc": {
         "deployedAddress": "",
         "sellAmount": 0.1,
+        "nativeToken": "BNB",
         "wrappedToken": "WBNB",
         "token1": "USDC",
-        "token2": "DAI"
-    },
-    "bscTestnet": {
-        "deployedAddress": "0xf02332b602c5e9ed308D1085D901B81A33072cBD",
-        "sellAmount": 0.1,
-        "wrappedToken": "WBNB",
-        "token1": "USDC",
-        "token2": "DAI"
+        "token2": "DAI",
+        "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     },
     "polygon": {
         "deployedAddress": "",
         "sellAmount": 0.1,
+        "nativeToken": "MATIC",
         "wrappedToken": "WMATIC",
         "token1": "USDC",
-        "token2": "DAI"
-    },
-    "polygonMumbai": {
-        "deployedAddress": "",
-        "sellAmount": 0.1,
-        "wrappedToken": "WMATIC",
-        "token1": "USDC",
-        "token2": "DAI"
+        "token2": "DAI",
+        "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     }
 }
