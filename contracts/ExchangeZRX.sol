@@ -2,13 +2,17 @@
 pragma solidity >= 0.6.0 < 0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
 }
 
-contract ExchangeZRX is Ownable {
+contract ExchangeZRX is Ownable, ReentrancyGuard {
 
+    using SafeERC20 for IERC20;
+    
     // exchange fee in percents with base 100 (percent * 100)
     // e.g. 0.1% = 10, 1% = 100
     uint32 private constant percent100Base = 10000;
@@ -54,7 +58,7 @@ contract ExchangeZRX is Ownable {
         // get token balance of contract
         uint256 amount = token.balanceOf(address(this));
         // transef all amount to recipient
-        token.transfer(recipient, amount);
+        token.safeTransfer(recipient, amount);
 
         emit WithdrawFee(token, recipient, amount);
     }
@@ -64,7 +68,8 @@ contract ExchangeZRX is Ownable {
         external
         onlyOwner
     {
-        recipient.transfer(address(this).balance);
+        (bool success, ) = recipient.call{value: address(this).balance}(new bytes(0));
+        require(success, 'ETH_TRANSFER_FAILED');        
     }
 
     // Payable fallback to allow this contract to receive protocol fee refunds.
@@ -89,7 +94,7 @@ contract ExchangeZRX is Ownable {
 
         // Give `spender` an allowance to spend this contract's `sellToken`.
         if (sellToken.allowance(address(this), spender) == 0) {
-            require(sellToken.approve(spender, uint(-1)), "!failed to approve sell token");
+            sellToken.safeApprove(spender, uint(-1));
         }
         // Call the encoded swap function call
         (bool success,) = _swapTarget.call{value: fee}(swapCallData);
@@ -99,7 +104,7 @@ contract ExchangeZRX is Ownable {
         boughtAmount = buyToken.balanceOf(address(this)) - boughtAmount;
         boughtAmount = (boughtAmount * _exchangeFeeFactor) / percent100Base;
         // transfer bought token
-        buyToken.transfer(msg.sender, boughtAmount);
+        buyToken.safeTransfer(msg.sender, boughtAmount);
 
         emit BoughtTokens(sellToken, buyToken, boughtAmount, msg.sender);
     }
@@ -117,13 +122,14 @@ contract ExchangeZRX is Ownable {
         // The `data` field from the API response.
         bytes calldata swapCallData
     )
+        nonReentrant
         external
         payable
     {
         // Track our balance of the sellToken
         uint256 sellTokenBefore = sellToken.balanceOf(address(this));
         // deposit sell token amount to current contract
-        require(sellToken.transferFrom(msg.sender,  address(this), sellAmount), "!failed to transfer sell token");
+        sellToken.safeTransferFrom(msg.sender,  address(this), sellAmount);
         _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value);
         // check the sell token our balance to prevent to sell more, than user has
         require(sellTokenBefore <= sellToken.balanceOf(address(this)), "!invalid sell amount");
@@ -136,6 +142,7 @@ contract ExchangeZRX is Ownable {
         address spender,
         bytes calldata swapCallData
     )
+        nonReentrant
         external
         payable
     {
