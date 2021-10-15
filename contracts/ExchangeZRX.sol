@@ -21,6 +21,9 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
     uint32 private _exchangeFeeFactor;
     // 0x protocol swap target contract
     address payable private _swapTarget;
+    // holds addresses of fee tokens
+    mapping(IERC20 => bool) private _mtokens;
+    IERC20[] private _atokens;
 
     IWETH private WETH;
 
@@ -54,13 +57,41 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         return _swapTarget;
     }
 
+    function tokenBalances() external view returns(IERC20[] memory, uint256[] memory) {
+        uint256[] memory balances = new uint256[](_atokens.length);
+        for (uint256 i = 0; i < balances.length; i++) {
+            balances[i] = _atokens[i].balanceOf(address(this));
+        }
+        return (_atokens, balances);
+    }
+
     function withdrawFee(IERC20 token, address recipient) external onlyOwner {
+        _withdrawFee(token, recipient);
+    }
+
+    function batchWithdrawFee(IERC20[] calldata tokens, address recipient) external onlyOwner {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            _withdrawFee(tokens[i], recipient);
+        }
+    }
+
+    function withdrawAllFee(address recipient) external onlyOwner {
+        for (uint256 i = 0; i < _atokens.length; i++) {
+            _withdrawFee(_atokens[i], recipient);
+        }
+        delete _atokens;
+    }
+
+    function _withdrawFee(IERC20 token, address recipient) internal {
         // get token balance of contract
         uint256 amount = token.balanceOf(address(this));
+        // clear address
+        delete _mtokens[token];
         // transef all amount to recipient
-        token.safeTransfer(recipient, amount);
-
-        emit WithdrawFee(token, recipient, amount);
+        if (amount > 0) {
+            token.safeTransfer(recipient, amount);
+            emit WithdrawFee(token, recipient, amount);
+        }
     }
 
     // Transfer ETH held by this contrat to recipient
@@ -105,7 +136,11 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         boughtAmount = (boughtAmount * _exchangeFeeFactor) / percent100Base;
         // transfer bought token
         buyToken.safeTransfer(msg.sender, boughtAmount);
-
+        // add token to tokens array
+        if (!_mtokens[buyToken]) {
+            _mtokens[buyToken] = true;
+            _atokens.push(buyToken);
+        }
         emit BoughtTokens(sellToken, buyToken, boughtAmount, msg.sender);
     }
 
