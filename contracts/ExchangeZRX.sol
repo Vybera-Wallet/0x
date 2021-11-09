@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >= 0.6.0 < 0.7.0;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
@@ -12,6 +14,7 @@ interface IWETH is IERC20 {
 contract ExchangeZRX is Ownable, ReentrancyGuard {
 
     using SafeERC20 for IERC20;
+    using SafeMath for uint256;
     
     // exchange fee in percents with base 100 (percent * 100)
     // e.g. 0.1% = 10, 1% = 100
@@ -132,8 +135,8 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         require(success, '!swap failed');
 
         // Use our current buyToken balance to determine how much we've bought.
-        boughtAmount = buyToken.balanceOf(address(this)) - boughtAmount;
-        boughtAmount = (boughtAmount * _exchangeFeeFactor) / percent100Base;
+        boughtAmount = buyToken.balanceOf(address(this)).sub(boughtAmount);
+        boughtAmount = boughtAmount.mul(_exchangeFeeFactor).div(percent100Base);
         // transfer bought token
         buyToken.safeTransfer(msg.sender, boughtAmount);
         // add token to tokens array
