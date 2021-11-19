@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 interface IWETH is IERC20 {
     function deposit() external payable;
+    function withdraw(uint256) external;
 }
 
 contract ExchangeZRX is Ownable, ReentrancyGuard {
@@ -119,7 +120,9 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         // The `data` field from the API response.
         bytes memory swapCallData,
         // dex commition
-        uint256 fee
+        uint256 fee,
+        // Buy ETH flag
+        bool buyETH
     )
         internal
     {
@@ -130,15 +133,24 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         if (sellToken.allowance(address(this), spender) == 0) {
             sellToken.safeApprove(spender, uint(-1));
         }
-        // Call the encoded swap function call
-        (bool success,) = _swapTarget.call{value: fee}(swapCallData);
-        require(success, '!swap failed');
+
+        if (sellToken != buyToken) {
+            // Call the encoded swap function call
+            (bool success,) = _swapTarget.call{value: fee}(swapCallData);
+            require(success, '!swap failed');
+        }
 
         // Use our current buyToken balance to determine how much we've bought.
         boughtAmount = buyToken.balanceOf(address(this)).sub(boughtAmount);
         boughtAmount = boughtAmount.mul(_exchangeFeeFactor).div(percent100Base);
         // transfer bought token
-        buyToken.safeTransfer(msg.sender, boughtAmount);
+        if (buyETH) {
+            WETH.withdraw(boughtAmount);
+            (bool success, ) = msg.sender.call{value: boughtAmount}(new bytes(0));
+            require(success, 'ETH_TRANSFER_FAILED');        
+        } else {
+            buyToken.safeTransfer(msg.sender, boughtAmount);
+        }
         // add token to tokens array
         if (!_mtokens[buyToken]) {
             _mtokens[buyToken] = true;
@@ -168,13 +180,13 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         uint256 sellTokenBefore = sellToken.balanceOf(address(this));
         // deposit sell token amount to current contract
         sellToken.safeTransferFrom(msg.sender,  address(this), sellAmount);
-        _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value);
+        _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value, false);
         // check the sell token our balance to prevent to sell more, than user has
         require(sellTokenBefore <= sellToken.balanceOf(address(this)), "!invalid sell amount");
     }
 
     // swaps ETH->ERC20 tokens held by this contract using a 0x-API quote.
-    function fillQuoteETH(
+    function fillQuoteSellETH(
         uint256 sellAmount,
         IERC20 buyToken,
         address spender,
@@ -188,8 +200,30 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         uint256 balanceBefore = WETH.balanceOf((address(this)));
         // deposit ETH to WETH
         WETH.deposit{value: sellAmount}();
-        _fillQuote(IERC20(WETH), buyToken, spender, swapCallData, msg.value - sellAmount);
+        _fillQuote(IERC20(WETH), buyToken, spender, swapCallData, msg.value - sellAmount, false);
         // check the sell token our balance to prevent to sell more, than user has
         require(balanceBefore <= WETH.balanceOf(address(this)), "!invalid sell amount");
+    }
+
+    // swaps ERC20->ETH tokens held by this contract using a 0x-API quote.
+    function fillQuoteBuyETH(
+        uint256 sellAmount,
+        IERC20 sellToken,
+        address spender,
+        bytes calldata swapCallData
+    )
+        nonReentrant
+        external
+        payable
+    {
+        // Track our balance of the sellToken
+        uint256 sellTokenBefore = sellToken.balanceOf(address(this));
+        uint256 balanceBefore = address(this).balance;
+        // deposit sell token amount to current contract
+        sellToken.safeTransferFrom(msg.sender,  address(this), sellAmount);
+        _fillQuote(sellToken, WETH, spender, swapCallData, msg.value, true);
+        // check the sell token our balance to prevent to sell more, than user has
+        require(sellTokenBefore <= sellToken.balanceOf(address(this)) &&
+            (balanceBefore <= address(this).balance), "!invalid sell amount");
     }
 }

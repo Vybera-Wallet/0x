@@ -258,7 +258,7 @@ async function doSwapNative(web3, network, sellAmount, nativeToken, buyTokenName
     try {
         // Have the contract fill the quote
         console.info(`Filling the quote through the contract at ${deployedAddress.bold}...`);
-        receipt = await waitForTxSuccess(contract.methods.fillQuoteETH(
+        receipt = await waitForTxSuccess(contract.methods.fillQuoteSellETH(
                 sellAmountBase,
                 quote.buyTokenAddress,
                 quote.allowanceTarget,
