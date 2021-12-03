@@ -9,7 +9,7 @@
         "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     },
     "ropsten": {
-        "deployedAddress": "0x544c77f46512A301c71c2772811539B561E160Bd",
+        "deployedAddress": "0x68229bF363b6DB96A20e423f57F3A81274EE8d14",
         "sellAmount": 0.1,
         "nativeToken": "ETH",
         "wrappedToken": "WETH",
