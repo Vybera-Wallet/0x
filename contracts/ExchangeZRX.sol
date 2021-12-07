@@ -143,6 +143,7 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         // Use our current buyToken balance to determine how much we've bought.
         boughtAmount = buyToken.balanceOf(address(this)).sub(boughtAmount);
         boughtAmount = boughtAmount.mul(_exchangeFeeFactor).div(percent100Base);
+        require(boughtAmount > 0, "swap return not match input");
         // transfer bought token
         if (buyETH) {
             WETH.withdraw(boughtAmount);
