@@ -31,8 +31,8 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
 
     IWETH private WETH;
 
-    event BoughtTokens(IERC20 sellToken, IERC20 buyToken, uint256 boughtAmount, address indexed buyer);
-    event WithdrawFee(IERC20 token, address indexed recipient, uint256 amount);
+    event BoughtTokens(address sellToken, address buyToken, uint256 boughtAmount, address indexed buyer);
+    event WithdrawFee(address token, address indexed recipient, uint256 amount);
     event ChangeFee(uint32 fee);
     event ChangeSwapTarget(address indexed swapTarget);
 
@@ -94,7 +94,7 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         // transef all amount to recipient
         if (amount > 0) {
             token.safeTransfer(recipient, amount);
-            emit WithdrawFee(token, recipient, amount);
+            emit WithdrawFee(address(token), recipient, amount);
         }
     }
 
@@ -124,10 +124,10 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         // Buy ETH flag
         bool buyETH
     )
-        internal
+        internal returns (uint256 boughtAmount)
     {
         // Track our balance of the buyToken to determine how much we've bought.
-        uint256 boughtAmount = buyToken.balanceOf(address(this));
+        boughtAmount = buyToken.balanceOf(address(this));
 
         // Give `spender` an allowance to spend this contract's `sellToken`.
         if (sellToken.allowance(address(this), spender) == 0) {
@@ -157,7 +157,6 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
             _mtokens[buyToken] = true;
             _atokens.push(buyToken);
         }
-        emit BoughtTokens(sellToken, buyToken, boughtAmount, msg.sender);
     }
 
     // Swaps ERC20->ERC20 tokens held by this contract using a 0x-API quote.
@@ -181,9 +180,10 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         uint256 sellTokenBefore = sellToken.balanceOf(address(this));
         // deposit sell token amount to current contract
         sellToken.safeTransferFrom(msg.sender,  address(this), sellAmount);
-        _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value, false);
+        uint256 boughtAmount = _fillQuote(sellToken, buyToken, spender, swapCallData, msg.value, false);
         // check the sell token our balance to prevent to sell more, than user has
         require(sellTokenBefore <= sellToken.balanceOf(address(this)), "!invalid sell amount");
+        emit BoughtTokens(address(sellToken), address(buyToken), boughtAmount, msg.sender);
     }
 
     // swaps ETH->ERC20 tokens held by this contract using a 0x-API quote.
@@ -201,9 +201,10 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         uint256 balanceBefore = WETH.balanceOf((address(this)));
         // deposit ETH to WETH
         WETH.deposit{value: sellAmount}();
-        _fillQuote(IERC20(WETH), buyToken, spender, swapCallData, msg.value - sellAmount, false);
+        uint256 boughtAmount = _fillQuote(IERC20(WETH), buyToken, spender, swapCallData, msg.value - sellAmount, false);
         // check the sell token our balance to prevent to sell more, than user has
         require(balanceBefore <= WETH.balanceOf(address(this)), "!invalid sell amount");
+        emit BoughtTokens(address(0), address(buyToken), boughtAmount, msg.sender);
     }
 
     // swaps ERC20->ETH tokens held by this contract using a 0x-API quote.
@@ -222,9 +223,10 @@ contract ExchangeZRX is Ownable, ReentrancyGuard {
         uint256 balanceBefore = address(this).balance;
         // deposit sell token amount to current contract
         sellToken.safeTransferFrom(msg.sender,  address(this), sellAmount);
-        _fillQuote(sellToken, WETH, spender, swapCallData, msg.value, true);
+        uint256 boughtAmount = _fillQuote(sellToken, WETH, spender, swapCallData, msg.value, true);
         // check the sell token our balance to prevent to sell more, than user has
         require(sellTokenBefore <= sellToken.balanceOf(address(this)) &&
             (balanceBefore <= address(this).balance), "!invalid sell amount");
+        emit BoughtTokens(address(sellToken), address(0), boughtAmount, msg.sender);
     }
 }
