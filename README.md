@@ -43,7 +43,7 @@
  ```
 
 - `npm run deploy` - deploy and configure all contracts in ropsten testnet
-- `npm run deploy <network>` - deploy and configure all contracts for some network [NOT IMPLEMENTED]
+- `npm run deploy <network>` - deploy and configure all contracts for some network [NOT IMPLEMENTED]. Example: 'npm run deploy ropsten', 'npm run deploy mainnet'
 
 ### Verify deployed contracts
 
