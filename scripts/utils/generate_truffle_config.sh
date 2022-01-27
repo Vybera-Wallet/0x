@@ -15,6 +15,6 @@ generate_truffle_config() {
     sed -i -e "s/enabled: false/enabled: $OPTIMIZATION_KEY/g" $CONFIG_NAME
   fi
   if [ $# -ge 4 ]; then
-    sed -i -e "s/runs: 200/runs: $RUN_KEY/g" $CONFIG_NAME
+    sed -i -e "s/runs: 1000/runs: $RUN_KEY/g" $CONFIG_NAME
   fi
 }

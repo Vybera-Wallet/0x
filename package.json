@@ -13,6 +13,7 @@
     "coverage": "bash ./scripts/coverage.sh",
     "build": "bash ./scripts/build.sh",
     "test": "node src/0x-exchange-contract.js",
+    "test-deploy": "node src/0x-exchange-test-deploy.js",
     "deploy": "bash ./scripts/deploy.sh",
     "flatten": "bash ./scripts/flatten.sh",
     "verify": "bash ./scripts/verify.sh"

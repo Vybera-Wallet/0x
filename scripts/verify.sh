@@ -11,7 +11,7 @@ else
     truffle run verify $1 --network ropsten
   else
     if [[ $1 = "all" ]]; then
-      truffle run verify ExchangeZRX --network $2
+      truffle run verify ExchangeZRX@0xb55E3D6438C4Cb0d952Bc7b8a71fAB14Cc763519 --forceConstructorArgs string:0000000000000000000000000000000000000000000000000000000000000064000000000000000000000000def1c0ded9bec7f1a1670819833240f027b25eff000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 --network $2
     else
       truffle run verify $1 --network $2
     fi

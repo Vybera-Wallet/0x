@@ -1,6 +1,6 @@
 {
     "mainnet": {
-        "deployedAddress": "",
+        "deployedAddress": "0xb55E3D6438C4Cb0d952Bc7b8a71fAB14Cc763519",
         "sellAmount": 0.1,
         "nativeToken": "ETH",
         "wrappedToken": "WETH",
