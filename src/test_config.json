@@ -22,7 +22,7 @@
         "sellAmount": 0.1,
         "nativeToken": "BNB",
         "wrappedToken": "WBNB",
-        "token1": "USDC",
+        "token1": "BUSDC",
         "token2": "DAI",
         "addressForFee": "0xd2bf9C5D18d2f6819F2c13F3A32fcFc3C9DBD2e7"
     },
